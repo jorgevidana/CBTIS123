@@ -1,248 +1,231 @@
-<!--
-Archivo: index.html
-Plantilla para una página de examen que toma una batería de preguntas (JSON), selecciona N aleatorias (por defecto 20 de 60), muestra opciones barajadas, calcula calificación, muestra la nota al alumno y guarda la respuesta en Google Sheets mediante un Web App de Google Apps Script.
-
-Instrucciones rápidas (ver README dentro del archivo):
- 1) Personaliza el array `QUESTIONS` con tus 60 preguntas en formato mostrado.
- 2) Sube el Google Apps Script (código `gs_script.txt` incluido más abajo) a https://script.google.com y despliega como Web App (Enviar > Implementar > Nueva implementación). Copia la URL y pégala en la variable `GAS_WEBAPP_URL` en este HTML.
- 3) Hospeda este index.html en GitHub Pages, Netlify o en el servidor del plantel. También puedes abrir localmente para pruebas (pero la recolección a Sheets necesita URL desplegada).
- 4) Recomendación anti-trampa: imprime códigos únicos por alumno y pídeles ingresar su CÓDIGO y Nombre antes de iniciar; además activa la aleatorización (ya incluida) y 5 preguntas de aplicación.
-
--->
-
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Examen - CBTIS 123 (Plantilla)</title>
-  <style>
-    body{font-family: Inter,system-ui,Arial;max-width:900px;margin:18px auto;padding:14px}
-    header{display:flex;justify-content:space-between;align-items:center}
-    .card{border:1px solid #ddd;padding:12px;border-radius:8px;margin:10px 0}
-    button{padding:8px 12px;border-radius:6px;border:none;background:#2563eb;color:white}
-    .small{font-size:0.9rem;color:#444}
-    .question{margin:12px 0}
-    .option{display:block;margin:6px 0}
-    #status{margin-top:8px}
-    input[type="text"]{padding:6px;border-radius:6px;border:1px solid #ccc;width:100%}
-  </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Examen - CBTIS 123 (Plantilla Final)</title>
+    <style>
+        body{font-family: Inter,system-ui,Arial;max-width:900px;margin:18px auto;padding:14px; background-color: #f4f4f9;}
+        header{display:flex;justify-content:space-between;align-items:center; border-bottom: 2px solid #ccc; padding-bottom: 10px;}
+        h2 { color: #1e40af; }
+        .card{background-color: white; border:1px solid #ddd; padding:18px; border-radius:12px; margin:15px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
+        button{padding:10px 15px; border-radius:8px; border:none; background:#1e40af; color:white; font-weight: bold; cursor: pointer; transition: background 0.3s ease;}
+        button:hover { background: #1d4ed8; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        .small{font-size:0.85rem; color:#4b5563; margin-top: 5px;}
+        .question{margin:15px 0; border-left: 4px solid #3b82f6; padding-left: 10px;}
+        .option{display:block; margin:8px 0; padding: 5px; border-radius: 4px; cursor: pointer; transition: background 0.2s;}
+        .option:hover { background-color: #eff6ff; }
+        input[type="text"]{padding:10px; border-radius:8px; border:1px solid #ccc; width:95%; margin-top: 5px; box-sizing: border-box;}
+        input[type="radio"] { margin-right: 8px; }
+        #status{margin-top:12px; font-weight: 500;}
+        #result h3 { color: #059669; }
+        /* Iframe oculto para el método Anti-CORS */
+        #hiddenIframe { display: none; } 
+    </style>
 </head>
 <body>
-  <header>
-    <h2>Examen - Cultura Digital (CBTIS 123)</h2>
-    <div class="small">Duración sugerida: 30-45 min • Respuestas guardadas automáticamente</div>
-  </header>
+    <header>
+        <h2>Examen - Cultura Digital (CBTIS 123)</h2>
+        <div class="small">Duración sugerida: 30-45 min • Respuestas guardadas automáticamente</div>
+    </header>
 
-  <div class="card">
-    <label>Nombre del alumno (o matrícula):</label>
-    <input id="studentName" placeholder="Ej. Juan Pérez - 123456" />
-    <div class="small">Código de acceso (opcional - usar si la profesora te lo entregó):</div>
-    <input id="accessCode" placeholder="Código único (opcional)" />
-  </div>
+    <div class="card">
+        <label>Nombre del alumno (o matrícula):</label>
+        <input id="studentName" placeholder="Ej. Juan Pérez - 123456" />
+        <div class="small">Código de especialidad (Logística, Programación, etc.):</div>
+        <input id="accessCode" placeholder="Código ÚNICO de especialidad (Ej. PROG01)" />
+    </div>
 
-  <div class="card">
-    <div class="small">Instrucciones:</div>
-    <ol>
-      <li>Inserta tu nombre/matrícula y (si aplica) tu código de acceso.</li>
-      <li>Presiona <b>Iniciar examen</b> para cargar preguntas aleatorias.</li>
-      <li>No recargues la página durante el examen.</li>
-    </ol>
-    <button id="startBtn">Iniciar examen</button>
-    <div id="status" class="small"></div>
-  </div>
+    <div class="card">
+        <div class="small">Instrucciones:</div>
+        <ol>
+            <li>Inserta tu nombre/matrícula y tu código de especialidad.</li>
+            <li>Presiona <b>Iniciar examen</b> para cargar preguntas aleatorias.</li>
+            <li>No recargues la página durante el examen.</li>
+        </ol>
+        <button id="startBtn">Iniciar examen</button>
+        <div id="status" class="small"></div>
+    </div>
 
-  <form id="examForm" style="display:none"></form>
+    <form id="examForm" style="display:none"></form>
 
-  <div id="result" class="card" style="display:none"></div>
+    <div id="result" class="card" style="display:none"></div>
+    <!-- Elemento clave para el envío Anti-CORS -->
+    <iframe id="hiddenIframe" name="hiddenIframe" style="display:none;"></iframe>
 
-  <script>
-    // ---------- CONFIGURACIÓN -------------------------------------------------
-    // Asumimos: batería total = 60 preguntas; examen por alumno = 20 (si hay menos, se usa todas)
-    const TOTAL_PER_EXAM = 20; // cuantas preguntas por examen
+    <script>
+        // ---------- CONFIGURACIÓN -------------------------------------------------
+        const TOTAL_PER_EXAM = 20; 
 
-    // URL del Web App de Google Apps Script (pegar la URL resultante al desplegar el script)
-    const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyJi3ZNCAyme7or7FJCYYXcMfZwj7GBGPXY5-X5f2JX1-BHUTs_vhu2LBPC2pY-jH7SmA/exec';
+        // URL del Web App de Google Apps Script (ESTA URL ES CORRECTA)
+        const GAS_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbyJi3ZNCAyme7or7FJCYYXcMfZwj7GBGPXY5-X5f2JX1-BHUTs_vhu2LBPC2pY-jH7SmA/exec';
 
-    // Tiempo máximo opcional (minutos). Si no se desea, poner 0.
-    const TIME_LIMIT_MINUTES = 0; // 0 = sin límite
+        const TIME_LIMIT_MINUTES = 0; 
 
-    // Ejemplo pequeño de QUESTIONS. Reemplaza por tu batería completa de 60 preguntas.
-    // Formato: { id: 'P001', question: 'texto', choices: ['A','B','C','D'], answer: 0 }
-    const QUESTIONS = [
-      {id:'P001', question:'¿Qué puerto paralelo era común en computadores antiguos?', choices:['USB','HDMI','LPT1','ETHERNET'], answer:2},
-      {id:'P002', question:'¿Qué significa "open source"?', choices:['Software gratuito','Código abierto','Sistema operativo','Aplicación de pago'], answer:1},
-      {id:'P003', question:'¿Cuál es la función del BIOS en una PC?', choices:['Gestionar memoria','Controlar arranque','Enviar emails','Editar fotos'], answer:1},
-      {id:'P004', question:'¿Qué representa HTTP?', choices:['HyperText Transfer Protocol','High Transfer Text Protocol','Hyper Transfer Text Process','Ninguna'], answer:0},
-      {id:'P005', question:'¿Qué es una IP?', choices:['Un programa','Una dirección','Un archivo','Una contraseña'], answer:1}
-      // Añade aquí hasta tus 60 preguntas reales...
-    ];
+        // Ejemplo pequeño de QUESTIONS. Reemplaza por tu batería completa de 60 preguntas.
+        const QUESTIONS = [
+            {id:'P001', question:'¿Qué puerto paralelo era común en computadores antiguos?', choices:['USB','HDMI','LPT1','ETHERNET'], answer:2},
+            {id:'P002', question:'¿Qué significa "open source"?', choices:['Software gratuito','Código abierto','Sistema operativo','Aplicación de pago'], answer:1},
+            {id:'P003', question:'¿Cuál es la función del BIOS en una PC?', choices:['Gestionar memoria','Controlar arranque','Enviar emails','Editar fotos'], answer:1},
+            {id:'P004', question:'¿Qué representa HTTP?', choices:['HyperText Transfer Protocol','High Transfer Text Protocol','Hyper Transfer Text Process','Ninguna'], answer:0},
+            {id:'P005', question:'¿Qué es una IP?', choices:['Un programa','Una dirección','Un archivo','Una contraseña'], answer:1}
+            // Añade aquí hasta tus 60 preguntas reales...
+        ];
 
-    // ----------------- LÓGICA -------------------------------------------------
-    const startBtn = document.getElementById('startBtn');
-    const examForm = document.getElementById('examForm');
-    const status = document.getElementById('status');
-    const resultDiv = document.getElementById('result');
+        // ----------------- LÓGICA -------------------------------------------------
+        const startBtn = document.getElementById('startBtn');
+        const examForm = document.getElementById('examForm');
+        const status = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
 
-    function shuffle(a){
-      for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
-      return a
-    }
+        function shuffle(a){
+            for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+            return a
+        }
 
-    function selectRandomQuestions(all, n){
-      const copy = all.slice();
-      shuffle(copy);
-      return copy.slice(0, Math.min(n, copy.length));
-    }
+        function selectRandomQuestions(all, n){
+            const copy = all.slice();
+            shuffle(copy);
+            return copy.slice(0, Math.min(n, copy.length));
+        }
 
-    function renderExam(questions){
-      examForm.innerHTML='';
-      questions.forEach((q, idx)=>{
-        const div = document.createElement('div'); div.className='question card';
-        div.innerHTML = `<strong>Pregunta ${idx+1}.</strong> <div>${escapeHtml(q.question)}</div>`;
-        // barajar opciones
-        const choices = q.choices.map((c,i)=>({i,c}));
-        shuffle(choices);
-        choices.forEach(ch=>{
-          const id = `q${idx}_opt${ch.i}`;
-          const label = document.createElement('label'); label.className='option';
-          label.innerHTML = `<input type="radio" name="q${idx}" value="${ch.i}" /> ${escapeHtml(ch.c)}`;
-          div.appendChild(label);
+        function renderExam(questions){
+            examForm.innerHTML='';
+            questions.forEach((q, idx)=>{
+                const div = document.createElement('div'); div.className='question card';
+                div.innerHTML = `<strong>Pregunta ${idx+1}.</strong> <div>${escapeHtml(q.question)}</div>`;
+                // barajar opciones
+                const choices = q.choices.map((c,i)=>({i,c}));
+                shuffle(choices);
+                choices.forEach(ch=>{
+                    const id = `q${idx}_opt${ch.i}`;
+                    const label = document.createElement('label'); label.className='option';
+                    label.innerHTML = `<input type="radio" name="q${idx}" value="${ch.i}" /> ${escapeHtml(ch.c)}`;
+                    div.appendChild(label);
+                });
+                examForm.appendChild(div);
+            });
+
+            const submitBtn = document.createElement('button'); submitBtn.type='button'; submitBtn.textContent='Enviar examen';
+            submitBtn.onclick = submitExam;
+            examForm.appendChild(submitBtn);
+            examForm.style.display='block';
+        }
+
+        function escapeHtml(text){return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+        function gatherAnswers(questions){
+            const answers = [];
+            for(let i=0;i<questions.length;i++){
+                const radios = document.getElementsByName(`q${i}`);
+                let chosen = null;
+                for(const r of radios) if(r.checked) chosen = parseInt(r.value);
+                answers.push({questionId: questions[i].id, chosen: chosen});
+            }
+            return answers;
+        }
+
+        function computeScore(questions, answers){
+            let correct=0; const detail=[];
+            for(let i=0;i<questions.length;i++){
+                const q = questions[i];
+                const a = answers[i].chosen;
+                const isCorrect = (a === q.answer);
+                if(isCorrect) correct++;
+                detail.push({id:q.id, correct:isCorrect});
+            }
+            const pct = Math.round((correct/questions.length)*100);
+            return {correct, total:questions.length, pct, detail};
+        }
+
+        function addField(form, name, value) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        }
+
+        function submitExam(){
+            // validar nombre
+            const name = document.getElementById('studentName').value.trim();
+            const code = document.getElementById('accessCode').value.trim();
+            if(!name || !code){alert('Ingresa tu nombre/matrícula Y tu código de especialidad antes de enviar');return}
+
+            const answers = gatherAnswers(currentQuestions);
+            // si alguna no contestada -> confirmar
+            const anyUnanswered = answers.some(a=>a.chosen===null);
+            if(anyUnanswered){ if(!confirm('Hay preguntas sin responder. ¿Deseas enviar de todos modos?')) return }
+
+            const score = computeScore(currentQuestions, answers);
+            
+            // MOSTRAR RESULTADO AL ALUMNO
+            resultDiv.style.display='block';
+            resultDiv.innerHTML = `<h3>Resultado</h3>
+                <p>Correctas: ${score.correct} / ${score.total}</p>
+                <p>Porcentaje: ${score.pct}%</p>
+                <p class="small">Se ha guardado tu examen. Si tienes dudas, avisa a tu profesor.</p>`;
+
+            // PREPARACIÓN DEL MÉTODO ANTI-CORS (Formulario POST oculto)
+            status.textContent = 'Guardando resultado... (Espera un momento, el guardado está en curso...)';
+
+            // 1. Crear formulario dinámico
+            const dataForm = document.createElement('form');
+            dataForm.target = 'hiddenIframe'; 
+            dataForm.method = 'POST';
+            dataForm.action = GAS_WEBAPP_URL; 
+            
+            // 2. Adjuntar campos (NOTA: Los nombres deben coincidir con e.parameter en el Apps Script)
+            addField(dataForm, 'student', name);
+            addField(dataForm, 'accessCode', code); // Campo de especialidad
+            addField(dataForm, 'score', score.pct);
+            addField(dataForm, 'correct', score.correct);
+            addField(dataForm, 'total', score.total);
+            addField(dataForm, 'details', JSON.stringify(score.detail)); // JSON como texto
+
+            // 3. Añadir el formulario al DOM y enviarlo
+            document.body.appendChild(dataForm);
+            dataForm.submit();
+            
+            // Finalizar el estado
+            setTimeout(() => {
+                status.textContent = '✅ ¡Guardado de datos finalizado correctamente! (Revisa tu hoja de cálculo)';
+                dataForm.remove(); 
+            }, 3000); 
+
+            // Bloquear el form para evitar reenvíos accidentales
+            examForm.querySelectorAll('input').forEach(i=>i.disabled=true);
+            document.getElementById('studentName').disabled = true;
+            document.getElementById('accessCode').disabled = true;
+        }
+
+        let currentQuestions = [];
+        startBtn.addEventListener('click', ()=>{
+            const name = document.getElementById('studentName').value.trim();
+            const code = document.getElementById('accessCode').value.trim();
+            if(!name || !code){ alert('Ingresa tu nombre/matrícula Y tu código de especialidad antes de iniciar'); return }
+
+            // seleccionar preguntas
+            currentQuestions = selectRandomQuestions(QUESTIONS, TOTAL_PER_EXAM);
+            renderExam(currentQuestions);
+            // ocultar boton
+            startBtn.disabled=true; startBtn.textContent='Examen iniciado';
+            status.textContent = `Examen cargado (${currentQuestions.length} preguntas). Buena suerte.`;
+            // si se desea tiempo, arrancar cuenta regresiva
+            if(TIME_LIMIT_MINUTES>0){ startTimer(TIME_LIMIT_MINUTES*60) }
         });
-        examForm.appendChild(div);
-      });
 
-      const submitBtn = document.createElement('button'); submitBtn.type='button'; submitBtn.textContent='Enviar examen';
-      submitBtn.onclick = submitExam;
-      examForm.appendChild(submitBtn);
-      examForm.style.display='block';
-    }
+        // temporizador (opcional)
+        function startTimer(seconds){
+            const timerDiv = document.createElement('div'); timerDiv.className='small card';
+            examForm.prepend(timerDiv);
+            let s=seconds; const iv = setInterval(()=>{
+                const m=Math.floor(s/60); const sec=s%60; timerDiv.textContent = `Tiempo restante: ${m}:${sec.toString().padStart(2,'0')}`;
+                if(s<=0){ clearInterval(iv); alert('Tiempo terminado. El examen se enviará automáticamente.'); submitExam(); }
+                s--; },1000);
+        }
 
-    function escapeHtml(text){return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-
-    function gatherAnswers(questions){
-      const answers = [];
-      for(let i=0;i<questions.length;i++){
-        const radios = document.getElementsByName(`q${i}`);
-        let chosen = null;
-        for(const r of radios) if(r.checked) chosen = parseInt(r.value);
-        answers.push({questionId: questions[i].id, chosen: chosen});
-      }
-      return answers;
-    }
-
-    function computeScore(questions, answers){
-      let correct=0; const detail=[];
-      for(let i=0;i<questions.length;i++){
-        const q = questions[i];
-        // note: due to choice shuffling we saved original index in value
-        const a = answers[i].chosen;
-        const isCorrect = (a === q.answer);
-        if(isCorrect) correct++;
-        detail.push({id:q.id, correct:isCorrect});
-      }
-      const pct = Math.round((correct/questions.length)*100);
-      return {correct, total:questions.length, pct, detail};
-    }
-
-    async function submitExam(){
-      // validar nombre
-      const name = document.getElementById('studentName').value.trim();
-      const code = document.getElementById('accessCode').value.trim();
-      if(!name){alert('Ingresa tu nombre o matrícula antes de enviar');return}
-
-      const answers = gatherAnswers(currentQuestions);
-      // si alguna no contestada -> confirmar
-      const anyUnanswered = answers.some(a=>a.chosen===null);
-      if(anyUnanswered){ if(!confirm('Hay preguntas sin responder. ¿Deseas enviar de todos modos?')) return }
-
-      const score = computeScore(currentQuestions, answers);
-      // mostrar resultado al alumno
-      resultDiv.style.display='block';
-      resultDiv.innerHTML = `<h3>Resultado</h3>
-        <p>Correctas: ${score.correct} / ${score.total}</p>
-        <p>Porcentaje: ${score.pct}%</p>
-        <p class="small">Se ha guardado tu examen. Si tienes dudas, avisa a tu profesor.</p>`;
-
-      // preparar payload para Sheets
-      const payload = {
-        timestamp: new Date().toISOString(),
-        student: name,
-        accessCode: code,
-        score: score.pct,
-        correct: score.correct,
-        total: score.total,
-        details: JSON.stringify(score.detail)
-      };
-
-      try{
-        status.textContent = 'Guardando resultado...';
-        const res = await fetch(GAS_WEBAPP_URL, {
-          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
-        });
-        const j = await res.json();
-        status.textContent = j.success ? 'Guardado correctamente.' : ('Error guardado: '+(j.error||'desconocido'));
-      }catch(e){ status.textContent = 'Error al enviar: '+e.message }
-
-      // bloquear el form para evitar reenvíos accidentales
-      examForm.querySelectorAll('input').forEach(i=>i.disabled=true);
-    }
-
-    let currentQuestions = [];
-    startBtn.addEventListener('click', ()=>{
-      const name = document.getElementById('studentName').value.trim();
-      if(!name){ alert('Ingresa nombre o matrícula antes de iniciar'); return }
-      // seleccionar preguntas
-      currentQuestions = selectRandomQuestions(QUESTIONS, TOTAL_PER_EXAM);
-      renderExam(currentQuestions);
-      // ocultar boton
-      startBtn.disabled=true; startBtn.textContent='Examen iniciado';
-      status.textContent = `Examen cargado (${currentQuestions.length} preguntas). Buena suerte.`;
-      // si se desea tiempo, arrancar cuenta regresiva
-      if(TIME_LIMIT_MINUTES>0){ startTimer(TIME_LIMIT_MINUTES*60) }
-    });
-
-    // temporizador (opcional)
-    function startTimer(seconds){
-      const timerDiv = document.createElement('div'); timerDiv.className='small';
-      examForm.prepend(timerDiv);
-      let s=seconds; const iv = setInterval(()=>{
-        const m=Math.floor(s/60); const sec=s%60; timerDiv.textContent = `Tiempo restante: ${m}:${sec.toString().padStart(2,'0')}`;
-        if(s<=0){ clearInterval(iv); alert('Tiempo terminado. El examen se enviará automáticamente.'); submitExam(); }
-        s--; },1000);
-    }
-
-  </script>
-
-  <!--
-    -------------------- Google Apps Script (Backend) ------------------------
-    Pegar este código en un nuevo proyecto en script.google.com y desplegar como Web App.
-
-    // gs_script.txt
-    function doPost(e){
-      try{
-        const payload = JSON.parse(e.postData.contents);
-        const ssId = 'REEMPLAZA_CON_ID_DE_TU_SHEET'; // ID de la hoja (URL)
-        const sheetName = 'Respuestas';
-        const ss = SpreadsheetApp.openById(ssId);
-        let sheet = ss.getSheetByName(sheetName);
-        if(!sheet) sheet = ss.insertSheet(sheetName);
-        // cabeceras si vacía
-        if(sheet.getLastRow()===0){ sheet.appendRow(['timestamp','student','accessCode','score','correct','total','details']); }
-        sheet.appendRow([payload.timestamp, payload.student, payload.accessCode, payload.score, payload.correct, payload.total, payload.details]);
-        return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);
-      }catch(err){
-        return ContentService.createTextOutput(JSON.stringify({success:false,error:err.message})).setMimeType(ContentService.MimeType.JSON);
-      }
-    }
-
-    Instrucciones de despliegue:
-     1) Crea hoja de cálculo nueva en Google Sheets.
-     2) Copia su ID (de la URL) y pégalo en ssId.
-     3) En script.google.com crea nuevo proyecto y pega el código.
-     4) 'Deploy' -> 'New deployment' -> Tipo: Web app. Ejecutar como: "Me". Quién tiene acceso: "Cualquiera" (o "Anyone, even anonymous" si no usan cuentas Google).
-     5) Copia la URL y pégala en GAS_WEBAPP_URL en el HTML.
-  -->
-
+    </script>
 </body>
 </html>
