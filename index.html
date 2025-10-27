@@ -65,12 +65,51 @@
 
         // Ejemplo pequeño de QUESTIONS. Reemplaza por tu batería completa de 60 preguntas.
         const QUESTIONS = [
-            {id:'P001', question:'¿Qué puerto paralelo era común en computadores antiguos?', choices:['USB','HDMI','LPT1','ETHERNET'], answer:2},
-            {id:'P002', question:'¿Qué significa "open source"?', choices:['Software gratuito','Código abierto','Sistema operativo','Aplicación de pago'], answer:1},
-            {id:'P003', question:'¿Cuál es la función del BIOS en una PC?', choices:['Gestionar memoria','Controlar arranque','Enviar emails','Editar fotos'], answer:1},
-            {id:'P004', question:'¿Qué representa HTTP?', choices:['HyperText Transfer Protocol','High Transfer Text Protocol','Hyper Transfer Text Process','Ninguna'], answer:0},
-            {id:'P005', question:'¿Qué es una IP?', choices:['Un programa','Una dirección','Un archivo','Una contraseña'], answer:1}
-            // Añade aquí hasta tus 60 preguntas reales...
+             // --- 4 LIBERTADES DEL SOFTWARE LIBRE ---
+    {id:'P001', question:'¿Qué libertad permite ejecutar el programa con cualquier propósito?', choices:['Libertad 0','Libertad 1','Libertad 2','Libertad 3'], answer:0}, // Libertad 0
+    {id:'P002', question:'¿Qué libertad permite estudiar y modificar el código fuente para adaptarlo?', choices:['Libertad 0','Libertad 1','Libertad 2','Libertad 3'], answer:1}, // Libertad 1
+    {id:'P003', question:'¿Qué libertad permite redistribuir copias para ayudar a otros?', choices:['Libertad 0','Libertad 1','Libertad 2','Libertad 3'], answer:2}, // Libertad 2
+    {id:'P004', question:'¿Qué libertad permite distribuir copias de las versiones modificadas?', choices:['Libertad 0','Libertad 1','Libertad 2','Libertad 3'], answer:3}, // Libertad 3
+    
+    // --- SOFTWARE LIBRE Y OPEN SOURCE ---
+    {id:'P005', question:'¿Qué tipo de sistema operativo es GNU/Linux?', choices:['Sistema operativo de Microsoft','Sistema operativo tipo Unix de software libre','Navegador web de código abierto','Suite ofimática de pago'], answer:1},
+    {id:'P006', question:'El término "open source" se refiere a un modelo donde el código fuente es:', choices:['Totalmente privado y de pago','Disponible públicamente para modificar y distribuir','Solo visible para el creador','Software sin licencia'], answer:1},
+    {id:'P007', question:'¿Cuál de los siguientes es un ejemplo común de software de código abierto?', choices:['Microsoft Word','Adobe Photoshop','Mozilla Firefox','Windows 11'], answer:2},
+    
+    // --- HACKERS Y LICENCIAS ---
+    {id:'P008', question:'Según el resumen, un hacker es una persona que irrumpe en un sistema informático para:', choices:['Diseñar sistemas operativos','Crear videojuegos seguros','Instalar malware, robar o destruir datos','Administrar redes de forma ética'], answer:2},
+    {id:'P009', question:'La licencia Copyleft permite copiar, modificar y distribuir una obra, siempre que las versiones derivadas se distribuyan:', choices:['Bajo una licencia de pago','Bajo los mismos términos','Sin ninguna licencia','Solo con permiso del autor original'], answer:1},
+    
+    // --- IDENTIDAD Y HUELLA DIGITAL ---
+    {id:'P010', question:'La Identidad Digital es el conjunto de información que se genera de una persona en internet, incluyendo:', choices:['Solo su nombre y correo','Únicamente contraseñas','Datos personales, actividades y credenciales de autenticación','Documentos físicos'], answer:2},
+    {id:'P011', question:'La Huella Digital es la información que se crea al:', choices:['Usar una tarjeta de identificación física','Almacenar archivos sin conexión','Interactuar en línea (publicaciones, registros de actividad)','Verificar la identidad con un PIN'], answer:2},
+
+    // --- SEGURIDAD Y AUTENTICACIÓN ---
+    {id:'P012', question:'La Seguridad Digital (Ciberseguridad) busca proteger sistemas, redes y datos de:', choices:['Datos basura y correos antiguos','Ataques digitales y accesos no autorizados','La contaminación tecnológica','La distribución de software libre'], answer:1},
+    {id:'P013', question:'¿Cuál es uno de los tres pilares fundamentales de la seguridad digital?', choices:['Publicidad','Programación','Confidencialidad','Comercio'], answer:2},
+    {id:'P014', question:'¿Cuál es el propósito principal de la Autenticación?', choices:['Crear archivos','Verificar la identidad en el entorno digital','Gestionar la memoria de la PC','Copiar el código fuente'], answer:1},
+    
+    // --- TIPOS DE CREDENCIALES ---
+    {id:'P015', question:'¿Qué tipo de credencial son un gafete con foto o una tarjeta de identificación?', choices:['Digitales verificables','Móviles','Físicas','Llaves de acceso'], answer:2},
+    {id:'P016', question:'Las credenciales de inicio de sesión incluyen:', choices:['Huella dactilar y rostro','Nombres de usuario y contraseñas','Documentos seguros en billeteras digitales','Tarjetas magnéticas'], answer:1},
+    {id:'P017', question:'¿Qué tipo de credenciales se almacenan en el teléfono (como pases de abordar) y se usan sin contacto?', choices:['Físicas','Digitales verificables','Móviles','Contraseñas tradicionales'], answer:2},
+    {id:'P018', question:'Las Credenciales Digitales Verificables son documentos seguros que se guardan en:', choices:['Una tarjeta de identificación física','Billeteras digitales','Un disco duro externo','En un bloc de notas'], answer:1},
+    {id:'P019', question:'Las Llaves de Acceso (Passkeys) son un método de autenticación que reemplaza la contraseña utilizando:', choices:['Un código PIN de 4 dígitos','Las funciones biométricas del dispositivo (huella o rostro)','Un correo electrónico de confirmación','Un gafete físico'], answer:1},
+    {id:'P020', question:'Una credencial de acceso puede ser algo que se sabe (contraseña/PIN), algo que se tiene (tarjeta) o algo que se es, ¿qué es este último?', choices:['Un correo electrónico','Una huella digital o reconocimiento facial','Un certificado digital','Un número de cuenta'], answer:1},
+
+    // --- CONTAMINACIÓN ---
+    {id:'P021', question:'La Contaminación Digital incluye:', choices:['Desechos de computadoras y teléfonos','Archivos, fotos o correos innecesarios acumulados','Alto consumo energético de la infraestructura','Software sin licencia'], answer:1},
+    {id:'P022', question:'La Contaminación Tecnológica incluye:', choices:['Residuos de aparatos electrónicos obsoletos (e-waste)','Correos antiguos no eliminados','Solo las contraseñas','Únicamente nombres de usuario'], answer:0},
+    
+    // --- PREGUNTAS DE REFUERZO V/F ---
+    {id:'P023', question:'La libertad 1 del software libre permite ver el código fuente.', choices:['Verdadero','Falso'], answer:0},
+    {id:'P024', question:'Un hacker siempre tiene como fin el robo de datos y no el desarrollo ético.', choices:['Verdadero','Falso'], answer:1}, // Falso, el resumen indica que los motivos pueden ser DIVERSOS.
+    {id:'P025', question:'La autenticación permite acceder al sistema sin verificar la identidad.', choices:['Verdadero','Falso'], answer:1},
+    {id:'P026', question:'La licencia Copyleft impide que las versiones modificadas se distribuyan.', choices:['Verdadero','Falso'], answer:1},
+    {id:'P027', question:'La Huella Digital y la Identidad Digital son términos completamente idénticos.', choices:['Verdadero','Falso'], answer:1},
+    {id:'P028', question:'Un PIN o una contraseña es un ejemplo de credencial "algo que se sabe".', choices:['Verdadero','Falso'], answer:0},
+    {id:'P029', question:'La Contaminación Tecnológica solo se refiere al consumo energético.', choices:['Verdadero','Falso'], answer:1},
+    {id:'P030', question:'GNU es un sistema operativo de tipo Unix.', choices:['Verdadero','Falso'], answer:0}
         ];
 
         // ----------------- LÓGICA -------------------------------------------------
