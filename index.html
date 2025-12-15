@@ -4,25 +4,126 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Examen - CBTIS 123 - Unidad 3 (Datos y Algoritmos)</title>
-    <style>
-        body{font-family: Inter,system-ui,Arial;max-width:900px;margin:18px auto;padding:14px; background-color: #f4f4f9;}
-        header{display:flex;justify-content:space-between;align-items:center; border-bottom: 2px solid #ccc; padding-bottom: 10px;}
-        h2 { color: #1e40af; }
-        .card{background-color: white; border:1px solid #ddd; padding:18px; border-radius:12px; margin:15px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
-        button{padding:10px 15px; border-radius:8px; border:none; background:#1e40af; color:white; font-weight: bold; cursor: pointer; transition: background 0.3s ease;}
-        button:hover { background: #1d4ed8; }
-        button:disabled { background: #9ca3af; cursor: not-allowed; }
-        .small{font-size:0.85rem; color:#4b5563; margin-top: 5px;}
-        .question{margin:15px 0; border-left: 4px solid #3b82f6; padding-left: 10px;}
-        .option{display:block; margin:8px 0; padding: 5px; border-radius: 4px; cursor: pointer; transition: background 0.2s;}
-        .option:hover { background-color: #eff6ff; }
-        input[type="text"]{padding:10px; border-radius:8px; border:1px solid #ccc; width:95%; margin-top: 5px; box-sizing: border-box;}
-        input[type="radio"] { margin-right: 8px; }
-        #status{margin-top:12px; font-weight: 500;}
-        #result h3 { color: #059669; }
-        /* Iframe oculto para el método Anti-CORS */
-        #hiddenIframe { display: none; } 
-    </style>
+<style>
+    /* Colores Institucionales: Guinda (#800020) y Gris (#4b5563) */
+    
+    body {
+        font-family: 'Arial', sans-serif;
+        max-width: 950px;
+        margin: 20px auto;
+        padding: 15px;
+        background-color: #f8f8f8; /* Fondo muy claro */
+        color: #333;
+    }
+    
+    /* Estilos del Encabezado */
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 3px solid #800020; /* Línea de color Guinda */
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+    
+    h2 {
+        color: #800020; /* Guinda principal */
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+    
+    /* Contenedor de Tarjeta (Card) */
+    .card {
+        background-color: white;
+        border: 1px solid #e0e0e0; /* Borde gris claro */
+        padding: 25px;
+        border-radius: 10px;
+        margin: 18px 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Sombra suave */
+    }
+    
+    /* Botones de acción */
+    button {
+        padding: 12px 20px;
+        border-radius: 8px;
+        border: none;
+        background: #800020; /* Guinda principal para botones */
+        color: white;
+        font-weight: bold;
+        font-size: 1.05rem;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.1s ease;
+    }
+    
+    button:hover {
+        background: #990033; /* Guinda un poco más claro al pasar el mouse */
+        transform: translateY(-1px);
+    }
+    
+    button:disabled {
+        background: #9ca3af; /* Gris de deshabilitado */
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .small {
+        font-size: 0.85rem;
+        color: #4b5563; /* Gris institucional para texto secundario */
+        margin-top: 8px;
+    }
+    
+    /* Estilo para cada pregunta */
+    .question {
+        margin: 20px 0;
+        border-left: 5px solid #800020; /* Barra lateral Guinda */
+        padding-left: 15px;
+        background-color: #fefefe;
+    }
+    
+    /* Estilo para las opciones de respuesta */
+    .option {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+    }
+    
+    .option:hover {
+        background-color: #ffe6e6; /* Fondo muy claro al pasar el mouse */
+        border-color: #800020; /* Borde Guinda al pasar el mouse */
+    }
+    
+    input[type="text"] {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #4b5563; /* Borde gris más oscuro */
+        width: 95%;
+        margin-top: 5px;
+        box-sizing: border-box;
+    }
+    
+    input[type="radio"] {
+        margin-right: 12px;
+        transform: scale(1.1);
+        accent-color: #800020; /* Color Guinda para el radio button */
+    }
+    
+    /* Estilo del resultado final (Éxito) */
+    #result {
+        border-left: 5px solid #059669; /* Mantenemos verde para indicar éxito/calificación */
+    }
+    
+    #result h3 {
+        color: #059669;
+    }
+    
+    /* Iframe oculto para el método Anti-CORS */
+    #hiddenIframe { display: none; }
+</style>
 </head>
 <body>
     <header>
