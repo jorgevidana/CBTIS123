@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Examen Extraordinario - Cultura Digital 1</title>
+    <style>
+        body{font-family: 'Segoe UI',Arial,sans-serif;max-width:900px;margin:18px auto;padding:14px; background-color: #f4f4f4; color: #333; user-select: none;}
+        header{display:flex;justify-content:space-between;align-items:center; border-bottom: 3px solid #800020; padding-bottom: 10px; margin-bottom: 20px;}
+        h2 { color: #800020; margin: 0; }
+        .card{background-color: white; border:1px solid #ddd; padding:25px; border-radius:12px; margin:15px 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1);}
+        button{padding:12px 20px; border-radius:8px; border:none; background:#800020; color:white; font-weight: bold; cursor: pointer; transition: 0.3s;}
+        button:hover { background: #5a0016; transform: scale(1.02); }
+        button:disabled { background: #9ca3af; cursor: not-allowed; transform: none; }
+        .small{font-size:0.85rem; color:#4b5563; margin-top: 5px;}
+        .question{margin:15px 0; border-left: 5px solid #800020; padding-left: 15px; background: #fff;}
+        .option{display:flex; align-items: center; margin:10px 0; padding: 12px; border-radius: 6px; border: 1px solid #eee; cursor: pointer;}
+        input[type="text"], input[type="password"]{padding:12px; border-radius:8px; border:1px solid #ccc; width:100%; box-sizing: border-box; margin-top: 10px;}
+        input[type="radio"] { margin-right: 15px; transform: scale(1.3); accent-color: #800020; }
+        #hiddenIframe { display: none; } 
+    </style>
+</head>
+<body oncontextmenu="return false;"> <header>
+        <div>
+            <h2>Cultura Digital 1</h2>
+            <div class="small">Examen Extraordinario • CBTIS 123</div>
+        </div>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/9b/LOGO_DGETI.png" alt="DGETI" width="55">
+    </header>
+
+    <div id="setupArea" class="card">
+        <label><b>Nombre Completo:</b></label>
+        <input id="studentName" placeholder="Apellido Paterno Materno Nombres" autocomplete="off" />
+        <br><br>
+        <label><b>Código de Especialidad / Grupo:</b></label>
+        <input id="accessCode" placeholder="Ej. PROG01" autocomplete="off" />
+        <br><br>
+        <label><b>Llave de Examen (Proporcionada por el docente):</b></label>
+        <input type="password" id="examKey" placeholder="Introduce la llave para desbloquear" />
+        <br><br>
+        <button id="startBtn">Desbloquear e Iniciar</button>
+    </div>
+
+    <form id="examForm" style="display:none"></form>
+    
+    <div id="finalMessage" class="card" style="display:none; text-align: center;">
+        <h3 style="color: #800020;">✔ Examen Enviado Correctamente</h3>
+        <p>Tus respuestas han sido registradas en el sistema para revisión del profesor.</p>
+    </div>
+
+    <iframe id="hiddenIframe" name="hiddenIframe"></iframe>
+
+    <script>
+        // CONFIGURACIÓN
+        const LLAVE_MAESTRA = "SUERTE"; // <--- CAMBIA ESTA LLAVE A TU GUSTO
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyxM_bCNhwXCHH9aqu6dTkq97_E5F90jOlTCntcXhvNygsf4uAoqytdTxNl5H3Z-r4VGw/exec';
+
+        const BANK = [
+            {id:1, q:"Es el conjunto de programas que indican a la computadora qué tareas realizar (no es físico):", c:["Software","Hardware","Firmware","CPU"], a:0},
+            {id:2, q:"¿Cuál es un ejemplo de Software de Sistema?", c:["Windows","Chrome","Word","WhatsApp"], a:0},
+            {id:3, q:"Tipo de software que permite al usuario realizar tareas específicas como escribir textos:", c:["Software de Aplicación","Software de Programación","Drivers","BIOS"], a:0},
+            {id:4, q:"¿Cuál de estos es un lenguaje de programación?", c:["Python","Windows","Firefox","SSD"], a:0},
+            {id:5, q:"Software que puede usarse, modificarse y distribuirse libremente:", c:["Software Libre","Software Propietario","Firmware","Malware"], a:0},
+            {id:6, q:"Conjunto de componentes físicos de una computadora (lo que se puede tocar):", c:["Hardware","Software","Internet","Datos"], a:0},
+            {id:7, q:"¿Cuál de los siguientes es un hardware de entrada?", c:["Mouse","Monitor","Impresora","Bocinas"], a:0},
+            {id:8, q:"Hardware encargado de mostrar la información ya procesada:", c:["Hardware de Salida","Hardware de Entrada","Memoria RAM","Disco Duro"], a:0},
+            {id:9, q:"Componente que realiza los cálculos y procesos internos (el cerebro de la PC):", c:["CPU (Procesador)","Memoria USB","Tarjeta Madre","Escáner"], a:0},
+            {id:10, q:"¿Qué tipo de hardware es una pantalla táctil?", c:["Periférico mixto (E/S)","Solo entrada","Solo salida","Almacenamiento"], a:0},
+            {id:11, q:"Plataformas digitales para crear perfiles, compartir videos y relacionarse:", c:["Redes sociales","Banca electrónica","Streaming","E-government"], a:0},
+            {id:12, q:"Servicio para enviar mensajes, audio y video en tiempo real como WhatsApp:", c:["Mensajería instantánea","Correo postal","Buscadores","Realidad Virtual"], a:0},
+            {id:13, q:"Modalidad educativa que utiliza internet para impartir clases sin ir al aula:", c:["Educación en línea","Comercio electrónico","Streaming","Realidad Virtual"], a:0},
+            {id:14, q:"Transmisión de contenido audiovisual que se ve en tiempo real sin descargarlo:", c:["Video en streaming","Descarga directa","Banca electrónica","Podcast"], a:0},
+            {id:15, q:"Tecnología que crea entornos digitales simulados e inmersivos con visores:", c:["Realidad Virtual","Banca electrónica","TICs","Hacking"], a:0},
+            {id:16, q:"¿Cuál es una característica de las TIC's?", c:["Son inmateriales e instantáneas","Son estáticas","No permiten interactuar","Solo son físicas"], a:0},
+            {id:17, q:"Libertad del software libre que permite estudiar y modificar el código fuente:", c:["Libertad 1","Libertad 0","Libertad 2","Libertad 3"], a:0},
+            {id:18, q:"Libertad que permite ejecutar el programa con cualquier propósito:", c:["Libertad 0","Libertad 3","Libertad 1","Libertad 2"], a:0},
+            {id:19, q:"Persona que irrumpe en sistemas informáticos (con diversos motivos):", c:["Hacker","Programador","Analista","Webmaster"], a:0},
+            {id:20, q:"Licencia que permite copiar y distribuir una obra siempre que las derivadas usen los mismos términos:", c:["Copyleft","Copyright","Freeware","Demo"], a:0},
+            {id:21, q:"Información generada de una persona en internet (datos, actividades, credenciales):", c:["Identidad digital","Huella digital","Seguridad digital","Contraseña"], a:0},
+            {id:22, q:"Práctica de proteger sistemas y redes de ataques digitales (Ciberseguridad):", c:["Seguridad digital","Información digital","Hacking","Software libre"], a:0},
+            {id:23, q:"Pilar de la seguridad que asegura que la información sea accesible para autorizados:", c:["Disponibilidad","Integridad","Confidencialidad","Soberanía"], a:0},
+            {id:24, q:"Credencial de acceso basada en 'algo que se es':", c:["Huella digital o rostro","Contraseña","PIN","Tarjeta magnética"], a:0},
+            {id:25, q:"Desechos de dispositivos electrónicos obsoletos o averiados:", c:["e-waste (Contaminación tecnológica)","Contaminación digital","Software Propietario","Spam"], a:0},
+            {id:26, q:"Espacio en memoria que almacena un dato y cuyo valor puede cambiar:", c:["Variable","Constante","Operador","Algoritmo"], a:0},
+            {id:27, q:"¿Cuál es un operador relacional (de comparación)?", c:["==","+","*","AND"], a:0},
+            {id:28, q:"Conjunto ordenado y finito de pasos para resolver un problema:", c:["Algoritmo","Variable","Hardware","Dato"], a:0},
+            {id:29, q:"Figura del diagrama de flujo usada para representar una decisión o pregunta:", c:["Rombo","Óvalo","Rectángulo","Paralelogramo"], a:0},
+            {id:30, q:"Forma de escribir un algoritmo usando lenguaje sencillo, similar al humano:", c:["Pseudocódigo","Binario","Código Máquina","Diagrama"], a:0}
+        ];
+
+        let currentQuestions = [];
+        function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a;}
+
+        document.getElementById('startBtn').onclick = () => {
+            const key = document.getElementById('examKey').value;
+            const name = document.getElementById('studentName').value.trim();
+            const code = document.getElementById('accessCode').value.trim();
+            
+            if(key !== LLAVE_MAESTRA) { alert("Llave incorrecta."); return; }
+            if(!name || !code){ alert("Completa tus datos."); return; }
+            
+            currentQuestions = shuffle([...BANK]).slice(0, 30);
+            renderExam();
+            document.getElementById('setupArea').style.display = 'none';
+            document.getElementById('examForm').style.display = 'block';
+            window.scrollTo(0,0);
+        };
+
+        function renderExam(){
+            const form = document.getElementById('examForm');
+            form.innerHTML = '';
+            currentQuestions.forEach((q, i) => {
+                const div = document.createElement('div');
+                div.className = 'card question';
+                div.innerHTML = `<p><b>${i+1}. ${q.q}</b></p>`;
+                let choices = q.c.map((text, idx) => ({ text: text, isCorrect: idx === 0 }));
+                shuffle(choices);
+                choices.forEach((choice) => {
+                    const label = document.createElement('label');
+                    label.className = 'option';
+                    label.innerHTML = `<input type="radio" name="q${i}" value="${choice.isCorrect}"> ${choice.text}`;
+                    div.appendChild(label);
+                });
+                form.appendChild(div);
+            });
+            const b = document.createElement('button');
+            b.id = "submitBtn"; b.type = "button"; b.textContent = "Finalizar Examen";
+            b.onclick = submitExam;
+            form.appendChild(b);
+        }
+
+        function submitExam(){
+            if(!confirm("¿Enviar examen? Ya no podrás cambiar nada.")) return;
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; // ANTI-SPAM
+            btn.textContent = "Enviando...";
+
+            let correctCount = 0;
+            currentQuestions.forEach((q, i) => {
+                const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                if(selected && selected.value === "true") correctCount++;
+            });
+
+            const score = Math.round((correctCount / currentQuestions.length) * 100);
+            
+            document.getElementById('examForm').style.display = 'none';
+            document.getElementById('finalMessage').style.display = 'block';
+
+            const f = document.createElement('form');
+            f.method = 'POST'; f.action = GAS_URL; f.target = 'hiddenIframe';
+            const add = (n, v) => { const i = document.createElement('input'); i.type='hidden'; i.name=n; i.value=v; f.appendChild(i); };
+            add('student', document.getElementById('studentName').value);
+            add('accessCode', document.getElementById('accessCode').value);
+            add('score', score);
+            add('correct', correctCount);
+            add('total', 30);
+            document.body.appendChild(f);
+            f.submit();
+        }
+
+        // Bloqueo de teclas de inspección (F12, Ctrl+Shift+I, etc.)
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 'I'.charCodeAt(0) || e.keyCode == 'J'.charCodeAt(0))) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+                return false;
+            }
+        };
+    </script>
+</body>
+</html>
